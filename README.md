@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL
-);" 
+);
 
 no mysql, descomentar o método que está na classe "Main.java" dentro de br.com.gelatos.main e rodar a classe como "java aplication" para criar os usuários com as senhas definidas pelas variáveis que estão no método. Depois que rodar, baixe o tomcat e rode o projeto usando a versão escolhida por você. Por fim, basta apenas rodar o projeto e acessar no navegador colocando o link "http://localhost:8080/Gelatos_hibernate/faces/login.xhtml" : 
 
