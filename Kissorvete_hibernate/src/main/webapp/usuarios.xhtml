@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Gerenciar Usuários</title>
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@^3/primeflex.css" />
+</h:head>
+
+<h:body>
+
+    <p:growl id="msgGlobal" life="5000" closable="true" />
+
+    <p:menubar hideDelay="1000">
+        <f:facet name="start">
+            <p:graphicImage name="images/primefaces-logo.svg" library="showcase" />
+        </f:facet>
+
+        <p:menuitem value="Inicio" icon="pi pi-fw pi-user" outcome="home.xhtml" />
+
+        <p:submenu label="Cadastros" icon="pi pi-fw pi-plus">
+            <p:submenu label="Produtos" icon="pi pi-fw pi-file">
+                <p:menuitem value="Gelatos" icon="pi pi-save" outcome="gelatos.xhtml" />
+            </p:submenu>
+        </p:submenu>
+
+        <p:submenu label="Usuários" icon="pi pi-fw pi-user">
+            <p:menuitem value="Gerenciar" icon="pi pi-fw pi-users" outcome="usuarios.xhtml" />
+        </p:submenu>
+
+        <p:submenu label="Vendas" icon="pi pi-fw pi-calendar">
+            <p:menuitem value="Realizar Venda" icon="pi pi-fw pi-plus" outcome="realizarVenda.xhtml" />
+            <p:menuitem value="Visualizar Vendas" icon="pi pi-save" outcome="visualizarVendas.xhtml" />
+        </p:submenu>
+
+        <p:menuitem value="Logout" icon="pi pi-fw pi-power-off" action="#{loginBean.logout}" />
+    </p:menubar>
+
+    <h:form id="formUsuarios" prependId="false">
+
+        <br />
+        <p:commandButton value="Novo Usuário" icon="pi pi-fw pi-plus"
+                         styleClass="ui-button-success"
+                         actionListener="#{userBean.prepareAdd}" update=":formModal"
+                         oncomplete="PF('userDialog').show()" />
+        <br /><br />
+
+        <div class="card">
+            <p:dataTable id="usersTable" value="#{userBean.users}" var="user"
+                         paginator="true" rows="10" responsiveLayout="scroll">
+
+                <f:facet name="header">
+                    <h:outputText value="Sistema de Usuários" class="font-bold" />
+                </f:facet>
+
+                <p:column headerText="ID" style="width:50px">
+                    <h:outputText value="#{user.id}" />
+                </p:column>
+
+                <p:column headerText="Usuário">
+                    <h:outputText value="#{user.username}" />
+                </p:column>
+
+                <p:column headerText="Role">
+                    <h:outputText value="#{user.role}" />
+                </p:column>
+
+                <p:column headerText="Ações" style="width:150px">
+                    <p:commandButton icon="pi pi-pencil" title="Editar"
+                                     actionListener="#{userBean.edit(user)}" update=":formModal"
+                                     oncomplete="PF('userDialog').show()" process="@this" />
+
+                    <p:commandButton icon="pi pi-trash" title="Excluir"
+                                     styleClass="ui-button-danger"
+                                     actionListener="#{userBean.delete(user)}"
+                                     update="usersTable msgGlobal" process="@this">
+                        <p:confirm />
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </div>
+    </h:form>
+
+    <!-- Modal para adicionar/editar usuário -->
+    <h:form id="formModal">
+        <p:dialog id="userDialog" header="Detalhes do Usuário" modal="true"
+                  widgetVar="userDialog" responsive="true" resizable="false"
+                  draggable="false" closable="true" styleClass="w-30rem">
+
+            <p:messages id="msgForm" autoUpdate="true" />
+
+            <div class="formgrid grid">
+                <div class="field col-12">
+                    <p:outputLabel for="username" value="Usuário:" class="block" />
+                    <p:inputText id="username" value="#{userBean.user.username}"
+                                 required="true" requiredMessage="Usuário é obrigatório"
+                                 class="w-full" />
+                </div>
+
+                <div class="field col-12">
+                    <p:outputLabel for="password" value="Senha:" class="block" />
+                    <p:password id="password" value="#{userBean.user.password}"
+                                redisplay="false" required="#{userBean.user.id == 0}"
+                                requiredMessage="Senha é obrigatória para novo usuário"
+                                class="w-full" />
+                    <h:outputText value="(Deixe vazio para manter senha atual no editar)"
+                                  rendered="#{userBean.user.id != 0}"
+                                  style="font-size:small;color:gray" />
+                </div>
+
+                <div class="field col-12">
+                    <p:outputLabel for="role" value="Role:" class="block" />
+                    <p:selectOneMenu id="role" value="#{userBean.user.role}"
+                                     required="true" requiredMessage="Role é obrigatório"
+                                     class="w-full">
+                        <f:selectItem itemLabel="Selecione um role" itemValue="" />
+                        <f:selectItem itemLabel="ADMIN" itemValue="ADMIN" />
+                        <f:selectItem itemLabel="FUNCIONARIO" itemValue="FUNCIONARIO" />
+                        <f:selectItem itemLabel="USER" itemValue="USER" />
+                    </p:selectOneMenu>
+                </div>
+            </div>
+
+            <f:facet name="footer">
+                <div class="flex justify-content-end gap-2">
+                    <p:commandButton value="Salvar" icon="pi pi-check"
+                                     action="#{userBean.save}"
+                                     update="msgGlobal usersTable :formModal:msgForm"
+                                     oncomplete="PF('userDialog').hide()" />
+                    <p:commandButton value="Cancelar" icon="pi pi-times"
+                                     onclick="PF('userDialog').hide()" type="button"
+                                     styleClass="ui-button-secondary" />
+                </div>
+            </f:facet>
+        </p:dialog>
+    </h:form>
+
+    <!-- Diálogo de confirmação global -->
+    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true"
+                     width="350" message="Tem certeza que deseja excluir este usuário?"
+                     header="Confirmação" severity="warn">
+        <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+        <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+    </p:confirmDialog>
+
+</h:body>
+</html>

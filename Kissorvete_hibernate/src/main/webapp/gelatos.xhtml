@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Gerenciar Gelatos</title>
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@^3/primeflex.css" />
+</h:head>
+
+<h:body>
+
+	<p:growl id="msgGlobal" life="5000" closable="true" />
+
+    <h:form id="formGelatos">
+        
+
+
+<p:menubar hideDelay="1000">
+        <f:facet name="start">
+            <p:graphicImage name="images/primefaces-logo.svg" library="showcase" />
+        </f:facet>
+        
+        <p:menuitem value="Inicio" icon="pi pi-fw pi-user" outcome="home.xhtml" />
+        
+        <p:submenu label="Cadastros" icon="pi pi-fw pi-plus">
+            <p:submenu label="Produtos" icon="pi pi-fw pi-file">
+                <p:menuitem value="Gelatos" icon="pi pi-save" outcome="gelatos.xhtml"/>
+            </p:submenu>
+        </p:submenu>
+
+
+
+        <p:submenu label="Usuários" icon="pi pi-fw pi-user">
+            <p:menuitem value="Gerenciar" icon="pi pi-fw pi-users" outcome="usuarios.xhtml"/>
+        </p:submenu>
+
+
+            <p:submenu label="Vendas" icon="pi pi-fw pi-calendar">
+                   <p:menuitem value="Realizar Venda" icon="pi pi-fw pi-plus" outcome="realizarVenda.xhtml"/> 
+
+                
+				<p:menuitem value="Visualizar Vendas" icon="pi pi-save" outcome="visualizarVendas.xhtml"/>  
+
+            </p:submenu>
+
+
+        <p:menuitem value="Logout" icon="pi pi-fw pi-power-off" action="#{loginBean.logout}" />
+    </p:menubar>
+
+	<br/>
+
+            <p:commandButton value="Novo Gelato" icon="pi pi-fw pi-plus" styleClass="ui-button-success"
+                         actionListener="#{gelatosBean.limparGelato}"
+                         update=":formModal"
+                         oncomplete="PF('gelatoDialog').show()" />
+	<br/>
+
+	<br/>
+
+        <div class="card">
+            <p:dataTable id="gelatosTabla" value="#{gelatosBean.gelatos}" var="gelato" lazy="false">
+                <f:facet name="header">
+                    <h:outputText value="Sistema de Gelatos" styleClass="font-bold" />
+                </f:facet>
+
+                <p:column headerText="Id">
+                    <h:outputText value="#{gelato.id}" />
+                </p:column>
+
+                <p:column headerText="Nome">
+                    <h:outputText value="#{gelato.nome}" />
+                </p:column>
+
+                <p:column headerText="Tipo">
+                    <h:outputText value="#{gelato.tipo}" />
+                </p:column>
+
+                <p:column headerText="Preço">
+                    <h:outputText value="#{gelato.preco}">
+                        <f:convertNumber type="currency" currencySymbol="R$" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column>
+                    <p:commandButton value="Editar" icon="pi pi-pencil"
+                                     update=":formModal"
+                                     oncomplete="PF('gelatoDialog').show()"
+                                     process="@this">
+                        <f:setPropertyActionListener target="#{gelatosBean.gelato}"
+                                                     value="#{gelato}" />
+                        <p:resetInput target=":formModal:gelatoDialog" />
+                    </p:commandButton>
+
+                    <p:commandButton value="Eliminar" class="ui-button-danger"
+                                     icon="pi pi-trash" 
+                                     oncomplete="PF('eliminarGelatoDialog').show()" 
+                                     process="@this">
+                        <f:setPropertyActionListener target="#{gelatosBean.gelato}" value="#{gelato}" />
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </div>
+    </h:form>
+
+    <h:form id="formModal">
+        <p:dialog id="gelatoDialog" header="Detalhes Gelato" showEffect="fade" modal="true"
+                  widgetVar="gelatoDialog" responsive="true">
+            <p:outputPanel id="gelatoPanel" class="ui-fluid">
+                <div class="field">
+                    <p:outputLabel for="nome">Nome</p:outputLabel>
+                    <p:inputText id="nome" value="#{gelatosBean.gelato.nome}" />
+                </div>
+                <div class="field">
+                    <p:outputLabel for="tipo">Tipo</p:outputLabel>
+                    <p:selectOneMenu id="tipo" value="#{gelatosBean.gelato.tipo}" >
+                        <f:selectItem itemLabel="Selecione um tipo" itemValue="" />
+                        <f:selectItem itemLabel="Picolé" itemValue="Picolé" />
+                        <f:selectItem itemLabel="Sorvete" itemValue="Sorvete" />
+                    </p:selectOneMenu>
+                </div>
+                <div class="field">
+                    <p:outputLabel for="preco">Preço</p:outputLabel>
+                    <p:inputText id="preco" value="#{gelatosBean.gelato.preco}" />
+                </div>
+            </p:outputPanel>
+
+            <f:facet name="footer">
+                <p:commandButton value="Salvar" icon="pi pi-check"
+                                 process="@form"
+                                 actionListener="#{gelatosBean.validarCampos}"
+                                 oncomplete="if (!args.validationFailed) { PF('gelatoDialog').hide(); window.location.reload(true); } :msgGlobal"
+
+                                />
+
+                <p:commandButton value="Cancelar" icon="pi pi-times"
+                                 onclick="PF('gelatoDialog').hide()"
+                                 type="button" />
+            </f:facet>
+        </p:dialog>
+
+        <p:confirmDialog widgetVar="eliminarGelatoDialog" showEffect="fade"
+                         width="300" message="Eliminar o gelato?" header="Confirmar"
+                         severity="warn">
+            <p:commandButton value="Sim" icon="pi pi-check"
+                             actionListener="#{gelatosBean.removerGelato}"
+                             process="@this"
+                             oncomplete="PF('eliminarGelatoDialog').hide(); window.location.reload(true); :msgGlobal" />
+            <p:commandButton value="Não" type="button"
+                             styleClass="ui-button-secondary" icon="pi pi-times"
+                             onclick="PF('eliminarGelatoDialog').hide()" />
+        </p:confirmDialog>
+    </h:form>
+
+</h:body>
+</html>
